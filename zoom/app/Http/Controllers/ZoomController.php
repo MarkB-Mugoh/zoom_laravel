@@ -11,14 +11,16 @@ class ZoomController extends Controller
     public function __construct()
     {
         $this->client = new Client();
-        $this->jwt = $this->generateZoomToken();
+        $this->oauth = new OAuth();
+
         $this->headers = [
-            'Authorization' => 'Bearer '.$this->jwt,
+            'Authorization' => 'Bearer ' . $this->generateZoomToken(),
             'Content-Type' => 'application/json',
             'Accept' => 'application/json',
         ];
     }
 }
+
 
 
 

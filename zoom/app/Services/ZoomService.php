@@ -3,15 +3,13 @@
 namespace App\Services;
 
 use GuzzleHttp\Client;
-use League\OAuth2\Client\Provider\GenericProvider;
-
 
 class ZoomService
 {
-    protected $apiKey;
-    protected $apiSecret;
+    protected $accountId;
+    protected $clientId;
+    protected $clientSecret;
     protected $httpClient;
-    protected $oauthProvider;
 
     public function __construct()
     {
@@ -22,29 +20,11 @@ class ZoomService
         $this->httpClient = new Client([
             'base_uri' => 'https://api.zoom.us/v2/',
         ]);
-
-
-        $this->oauthProvider = new GenericProvider([
-            'clientId' => $this->apiKey,
-            'clientSecret' => $this->apiSecret,
-            'urlAuthorize' => 'https://zoom.us/oauth/token',
-            'urlAccessToken' => 'https://zoom.us/oauth/token',
-            'urlResourceOwnerDetails' => '',
-        ]);
-
     }
 
-    // public function getAccessToken()
-    // {
-    //     $accessToken = $this->oauthProvider->getAccessToken('client_credentials');
-
-    //     return $accessToken->getToken();
-    // }
     public function getAccessToken()
     {
-        $httpClient = new \GuzzleHttp\Client();
-
-        $response = $httpClient->post('https://zoom.us/oauth/token', [
+        $response = $this->httpClient->post('https://zoom.us/oauth/token', [
             'form_params' => [
                 'grant_type' => 'client_credentials',
                 'client_id' => $this->clientId,
@@ -56,8 +36,6 @@ class ZoomService
 
         return $responseData['access_token'] ?? null;
     }
-
-
 
     public function createMeeting(array $data)
     {

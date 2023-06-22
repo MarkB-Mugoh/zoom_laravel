@@ -1,8 +1,11 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use GuzzleHttp\Client;
-use Zoom\Auth\OAuth;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Zoom\OAuth\OAuth;
 
 trait ZoomMeetingTrait
 {
@@ -16,7 +19,7 @@ trait ZoomMeetingTrait
         $this->oauth = new OAuth();
 
         $this->headers = [
-            'Authorization' => 'Bearer '.$this->generateZoomToken(),
+            'Authorization' => 'Bearer ' . $this->generateZoomToken(),
             'Content-Type' => 'application/json',
             'Accept' => 'application/json',
         ];
@@ -31,7 +34,7 @@ trait ZoomMeetingTrait
         $this->oauth->setClientSecret($clientSecret);
 
         $response = $this->oauth->clientCredentials();
-        $accessToken = $response->access_token;
+        $accessToken = $response['access_token'];
 
         return $accessToken;
     }
@@ -48,7 +51,7 @@ trait ZoomMeetingTrait
 
             return $date->format('Y-m-d\TH:i:s');
         } catch (\Exception $e) {
-            Log::error('ZoomJWT->toZoomTimeFormat : '.$e->getMessage());
+            Log::error('ZoomMeetingTrait->toZoomTimeFormat: ' . $e->getMessage());
 
             return '';
         }
@@ -70,45 +73,45 @@ trait ZoomMeetingTrait
 
         $body = [
             'headers' => $this->headers,
-            'body'    => json_encode([
-                'topic'      => $data['topic'],
-                'type'       => self::MEETING_TYPE_SCHEDULE,
+            'body' => json_encode([
+                'topic' => $data['topic'],
+                'type' => self::MEETING_TYPE_SCHEDULE,
                 'start_time' => $this->toZoomTimeFormat($data['start_time']),
-                'duration'   => $data['duration'],
-                'agenda'     => (! empty($data['agenda'])) ? $data['agenda'] : null,
-                'timezone'     => 'Asia/Kolkata',
-                'settings'   => [
-                    'host_video'        => ($data['host_video'] == "1") ? true : false,
+                'duration' => $data['duration'],
+                'agenda' => (!empty($data['agenda'])) ? $data['agenda'] : null,
+                'timezone' => 'Asia/Kolkata',
+                'settings' => [
+                    'host_video' => ($data['host_video'] == "1") ? true : false,
                     'participant_video' => $data['participant_video'] == "1" ? true : false,
-                    'waiting_room'      => true,
+                    'waiting_room' => true,
                 ],
             ]),
         ];
 
-        $response =  $this->client->post($url.$path, $body);
+        $response = $this->client->post($url . $path, $body);
 
         return [
             'success' => $response->getStatusCode() === 201,
-            'data'    => json_decode($response->getBody(), true),
+            'data' => json_decode($response->getBody(), true),
         ];
     }
 
     public function update($id, $data)
     {
-        $path = 'meetings/'.$id;
+        $path = 'meetings/' . $id;
         $url = $this->retrieveZoomUrl();
 
         $body = [
             'headers' => $this->headers,
-            'body'    => json_encode([
-                'topic'      => $data['topic'],
-                'type'       => self::MEETING_TYPE_SCHEDULE,
+            'body' => json_encode([
+                'topic' => $data['topic'],
+                'type' => self::MEETING_TYPE_SCHEDULE,
                 'start_time' => $this->toZoomTimeFormat($data['start_time']),
-                'duration'   => $data['duration'],
-                'agenda'     => (! empty($data['agenda'])) ? $data['agenda'] : null,
-                'timezone'     => 'Asia/Kolkata',
-                'settings'   => [
-                    'host_video'        => ($data['host_video'] == "1") ? true : false,
+                'duration' => $data['duration'],
+                'agenda' => (!empty($data['agenda'])) ? $data['agenda'] : null,
+                'timezone' => 'Asia/Kolkata',
+                'settings' => [
+                    'host_video' => ($data['host_video'] == "1") ? true : false,
                     'participant_video' => $data['participant_video'] == "1" ? true : false,
                 ],
             ]),
@@ -147,5 +150,3 @@ trait ZoomMeetingTrait
         ];
     }
 }
-
-
