@@ -1,66 +1,39 @@
 <?php
 namespace App\Http\Controllers;
 
-use GuzzleHttp\Psr7\Request;
-use App\Services\ZoomService;
-use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\Client;
 use Zoom\Auth\OAuth;
-use MacsiDigital\Zoom\Facades\ZoomOAuth;
-
-
-
-
-
-
 
 trait ZoomMeetingTrait
 {
     public $client;
-    public $jwt;
+    public $oauth;
     public $headers;
-    public $oauth; // Add this line to declare the $oauth property
-
-
 
     public function __construct()
     {
         $this->client = new Client();
         $this->oauth = new OAuth();
 
-        $this->jwt = $this->generateZoomToken();
         $this->headers = [
-            'Authorization' => 'Bearer '.$this->jwt,
+            'Authorization' => 'Bearer '.$this->generateZoomToken(),
             'Content-Type' => 'application/json',
             'Accept' => 'application/json',
         ];
     }
-    public function register()
+
+    private function generateZoomToken()
     {
-        $this->app->bind(Request::class, function ($app, $parameters) {
-            // Configure the binding based on your requirements
-            return new \GuzzleHttp\Psr7\Request(...$parameters);
+        $clientId = env('ZOOM_CLIENT_ID');
+        $clientSecret = env('ZOOM_CLIENT_SECRET');
 
-        });
-    }
+        $this->oauth->setClientId($clientId);
+        $this->oauth->setClientSecret($clientSecret);
 
+        $response = $this->oauth->clientCredentials();
+        $accessToken = $response->access_token;
 
-    public function generateZoomToken()
-    {
-        // $this->oauth = new OAuth();
-        // $key = env('ZOOM_API_KEY', '');
-        // $secret = env('ZOOM_API_SECRET', '');
-
-        $setClientId=env('ZOOM_CLIENT_ID');
-        $setClientSecret=env('ZOOM_CLIENT_SECRET');
-        // $this->oauth->setRedirectUri(env('ZOOM_REDIRECT_URI'));
-        $this->oauth->setScopes(['user:read']);
-
-        return $this->oauth->getAccessToken();
-
-
-
-        return \Firebase\JWT\JWT::encode($payload, $secret, 'HS256');
+        return $accessToken;
     }
 
     private function retrieveZoomUrl()
@@ -140,6 +113,8 @@ trait ZoomMeetingTrait
                 ],
             ]),
         ];
+
+        // Rest of the code...
     }
 
     public function scheduleMeeting(Request $request)
@@ -153,8 +128,6 @@ trait ZoomMeetingTrait
             'host_video' => 'required|string',
             'participant_video' => 'required|string',
         ]);
-
-        $this->oauth->setAuthorizationHeader();
 
         $data = [
             'topic' => $validatedData['topic'],
@@ -172,7 +145,7 @@ trait ZoomMeetingTrait
             'success' => $response->getStatusCode() === 201,
             'data' => json_decode($response->getBody(), true),
         ];
-
     }
 }
+
 
