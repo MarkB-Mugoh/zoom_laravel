@@ -168,6 +168,9 @@ return [
         // App\Providers\BroadcastServiceProvider::class,
         App\Providers\EventServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
+        Macsidigital\Zoom\Providers\ZoomServiceProvider::class,
+
+
     ])->toArray(),
 
     /*
@@ -184,5 +187,11 @@ return [
     'aliases' => Facade::defaultAliases()->merge([
         // 'Example' => App\Facades\Example::class,
     ])->toArray(),
+
+    'zoom' => [
+        'api_key' => env('ZOOM_API_KEY'),
+        'api_secret' => env('ZOOM_API_SECRET'),
+    ],
+
 
 ];
